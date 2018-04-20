@@ -4,6 +4,7 @@ setupVars="$setupVars"
 ServerIP="$ServerIP"
 ServerIPv6="$ServerIPv6"
 IPv6="$IPv6"
+CloudflaredServer="$CloudflaredServer"
 
 prepare_setup_vars() {
     touch "$setupVars"
@@ -51,7 +52,7 @@ setup_dnsmasq_dns() {
         local setupDNS1="$(grep 'PIHOLE_DNS_1' ${setupVars})"
         local setupDNS2="$(grep 'PIHOLE_DNS_2' ${setupVars})"
         if [[ -n "$DNS1" && -n "$setupDNS1"  ]] || \
-           [[ -n "$DNS2" && -n "$setupDNS2"  ]] ; then 
+           [[ -n "$DNS2" && -n "$setupDNS2"  ]] ; then
                 echo "Docker DNS variables not used"
         fi
         echo "Existing DNS servers used"
@@ -60,10 +61,10 @@ setup_dnsmasq_dns() {
 
     echo "Using $dnsType DNS servers: $DNS1 & $DNS2"
     if [[ -n "$DNS1" && -z "$setupDNS1" ]] ; then
-        change_setting "PIHOLE_DNS_1" "${DNS1}"
+        delete_setting "PIHOLE_DNS_1" "${DNS1}"
     fi
     if [[ -n "$DNS2" && -z "$setupDNS2" ]] ; then
-        change_setting "PIHOLE_DNS_2" "${DNS2}"
+        delete_setting "PIHOLE_DNS_2" "${DNS2}"
     fi
 }
 
@@ -85,12 +86,18 @@ setup_dnsmasq_config_if_missing() {
 }
 
 setup_dnsmasq() {
-    # Coordinates 
+    # Coordinates
     setup_dnsmasq_config_if_missing
-    setup_dnsmasq_dns "$DNS1" "$DNS2" 
+    setup_dnsmasq_dns "$DNS1" "$DNS2"
     setup_dnsmasq_interface "$INTERFACE"
     ProcessDNSSettings
     # dnsmasq -7 /etc/dnsmasq.d --interface="${INTERFACE:-eth0}"
+
+    # point server to cloudflared instance when declared
+    if [[ "${CloudflaredServer}" != "" ]]; then
+	delete_dnsmasq_setting "server"
+    	add_dnsmasq_setting "server" "$CloudflaredServer"
+    fi
 }
 
 setup_dnsmasq_hostnames() {
@@ -172,7 +179,7 @@ setup_web_port() {
     # Quietly exit early for empty or default
     if [[ -z "${1}" || "${1}" == '80' ]] ; then return ; fi
 
-    if ! echo $1 | grep -q '^[0-9][0-9]*$' ; then 
+    if ! echo $1 | grep -q '^[0-9][0-9]*$' ; then
         echo "$warning - $1 is not an integer"
         return
     fi
@@ -194,7 +201,7 @@ setup_web_port() {
 }
 
 setup_web_password() {
-    if [ -z "${WEBPASSWORD+x}" ] ; then 
+    if [ -z "${WEBPASSWORD+x}" ] ; then
         # Not set at all, give the user a random pass
         WEBPASSWORD=$(tr -dc _A-Z-a-z-0-9 < /dev/urandom | head -c 8)
         echo "Assigning random password: $WEBPASSWORD"
@@ -236,9 +243,9 @@ test_configs_debian() {
 }
 
 test_framework_stubbing() {
-    if [ -n "$PYTEST" ] ; then 
+    if [ -n "$PYTEST" ] ; then
         echo ":::::: Tests are being ran - stub out ad list fetching and add a fake ad block"
-        sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)" 
+        sed -i 's/^gravity_spinup$/#gravity_spinup # DISABLED FOR PYTEST/g' "$(which gravity.sh)"
         echo '123.123.123.123 testblock.pi-hole.local' > /var/www/html/fake.list
         echo 'file:///var/www/html/fake.list' > /etc/pihole/adlists.list
         echo 'http://localhost/fake.list' >> /etc/pihole/adlists.list

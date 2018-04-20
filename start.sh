@@ -5,7 +5,7 @@ export ServerIP
 export ServerIPv6
 export PYTEST
 export PHP_ENV_CONFIG
-export PHP_ERROR_LOG 
+export PHP_ERROR_LOG
 export HOSTNAME
 export WEBLOGDIR
 export DNS1
@@ -14,6 +14,7 @@ export INTERFACE
 export IPv6
 export WEBPASSWORD
 export WEB_PORT
+export CloudflaredServer
 
 . /bash_functions.sh
 
