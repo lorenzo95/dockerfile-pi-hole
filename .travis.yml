@@ -19,7 +19,8 @@ before_install:
 
 script:
   - docker build -f Dockerfile_debian_$ARCH -t visibilityspots/pi-hole:$ARCH ./
+  - docker run --name pi-hole --rm -ti --entrypoint='' visibilityspots/pi-hole:$ARCH pihole -v
   - dgoss run --name pi-hole -ti visibilityspots/pi-hole:$ARCH
 
 after_success:
-  - if [ "$TRAVIS_BRANCH" == "master" ]; then docker login -u=visibilityspots -p="$DOCKER_PASSWORD"; docker push visibilityspots/pi-hole:$ARCH; fi
+  - docker login -u=visibilityspots -p="$DOCKER_PASSWORD"; docker push visibilityspots/pi-hole:$ARCH
