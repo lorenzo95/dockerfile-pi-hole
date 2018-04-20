@@ -1,1 +1,9 @@
 **/*.sw*
+autotest
+CONTRIBUTING.md
+docker-compose.yml
+Dockerfile*
+doco-example.yml
+README.md
+TESTING.md
+traefik-docker-compose-example.md
