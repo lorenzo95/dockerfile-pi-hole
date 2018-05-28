@@ -2,4 +2,4 @@ command:
   pihole -v | head -1:
     exit-status: 0
     stdout:
-    - 'Pi-hole version is v3.3.1'
+    - 'Pi-hole version is v3.3.1 (Latest: v3.3.1)'
