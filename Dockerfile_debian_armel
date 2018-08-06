@@ -1,17 +1,17 @@
 FROM multiarch/debian-debootstrap:armel-stretch-slim
 
-LABEL image="diginc/pi-hole:debian_armhf"
+LABEL image="diginc/pi-hole:debian_armel"
 LABEL maintainer="adam@diginc.us"
 LABEL url="https://www.github.com/diginc/docker-pi-hole"
 
 ENV TAG debian
-ENV ARCH armhf
+ENV ARCH armel
 ENV PATH /opt/pihole:${PATH}
 
 COPY install.sh /usr/local/bin/docker-install.sh
 ENV setupVars /etc/pihole/setupVars.conf
 ENV PIHOLE_INSTALL /tmp/ph_install.sh
-ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.2.2/s6-overlay-armhf.tar.gz
+ENV S6OVERLAY_RELEASE https://github.com/just-containers/s6-overlay/releases/download/v1.21.4.0/s6-overlay-arm.tar.gz
 
 RUN apt-get update && \
     apt-get install -y wget curl net-tools cron procps && \
@@ -37,6 +37,9 @@ ENV IPv6 True
 
 EXPOSE 53 53/udp
 EXPOSE 80
+EXPOSE 67/udp
+EXPOSE 80
+EXPOSE 443
 
 ENV S6_LOGGING 0
 ENV S6_KEEP_ENV 1
